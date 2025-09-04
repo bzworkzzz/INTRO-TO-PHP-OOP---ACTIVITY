@@ -1,0 +1,59 @@
+<?php
+class Student {
+    private $studentName;
+    private $enrolledCourses = [];
+    const COURSE_COST = 1450;
+
+    public function __construct($studentName) {
+        $this->studentName = $studentName;
+    }
+
+    // Enroll in a new course
+    public function enrollCourse($course) {
+        if (!in_array($course, $this->enrolledCourses)) {
+            $this->enrolledCourses[] = $course;
+        }
+    }
+
+    // Drop an existing course
+    public function dropCourse($course) {
+        $key = array_search($course, $this->enrolledCourses);
+        if ($key !== false) {
+            unset($this->enrolledCourses[$key]);
+        }
+    }
+
+    // Calculate total fee
+    public function calculateFee() {
+        return count($this->enrolledCourses) * self::COURSE_COST;
+    }
+
+    // Show student details
+    public function showDetails() {
+        echo "<h3>Student Profile</h3>";
+        echo "Name: <b>" . $this->studentName . "</b><br>";
+        echo "Enrolled Courses: ";
+        
+        if (empty($this->enrolledCourses)) {
+            echo "None<br>";
+        } else {
+            foreach ($this->enrolledCourses as $c) {
+                echo $c . " ";
+            }
+            echo "<br>";
+        }
+
+        echo "Total Tuition Fee: PHP " . $this->calculateFee() . "<br>";
+    }
+}
+
+// Example usage
+$student = new Student("Jane Smith");
+$student->enrollCourse("Mathematics");
+$student->enrollCourse("Biology");
+$student->enrollCourse("History");
+
+$student->dropCourse("Biology");
+
+$student->showDetails();
+?>
