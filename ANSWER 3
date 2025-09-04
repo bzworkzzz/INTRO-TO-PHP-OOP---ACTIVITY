@@ -1,0 +1,149 @@
+<?php
+// DBConnection.php
+class DBConnection {
+    private $host = "localhost";
+    private $dbname = "school";
+    private $user = "root";
+    private $pass = "";
+    protected $pdo;
+
+    public function __construct() {
+        try {
+            $this->pdo = new PDO("mysql:host={$this->host};dbname={$this->dbname}", 
+                                 $this->user, $this->pass);
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (PDOException $e) {
+            exit("Database connection error: " . $e->getMessage());
+        }
+    }
+
+    // CREATE
+    public function insert($table, $columns, $placeholders, $values) {
+        $sql = "INSERT INTO $table ($columns) VALUES ($placeholders)";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute($values);
+    }
+
+    // READ
+    public function fetchAllRows($table) {
+        $stmt = $this->pdo->query("SELECT * FROM $table");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // UPDATE
+    public function modify($table, $setClause, $where, $values) {
+        $sql = "UPDATE $table SET $setClause WHERE $where";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute($values);
+    }
+
+    // DELETE
+    public function remove($table, $where, $values) {
+        $sql = "DELETE FROM $table WHERE $where";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute($values);
+    }
+}
+
+// Learner.php
+class Learner extends DBConnection {
+    private $TABLE_NAME = "students";
+
+    public function register($fullname, $program) {
+        return $this->insert(
+            $this->TABLE_NAME, 
+            "name, course", 
+            "?, ?", 
+            [$fullname, $program]
+        );
+    }
+
+    public function listAll() {
+        return $this->fetchAllRows($this->TABLE_NAME);
+    }
+}
+
+// Presence.php
+class Presence extends DBConnection {
+    private $TABLE_NAME = "attendance";
+
+    public function record($studentId, $state) {
+        return $this->insert(
+            $this->TABLE_NAME, 
+            "student_id, status", 
+            "?, ?", 
+            [$studentId, $state]
+        );
+    }
+
+    public function listRecords() {
+        return $this->fetchAllRows($this->TABLE_NAME);
+    }
+}
+
+// Example usage with HTML
+$learnerObj = new Learner();
+$presenceObj = new Presence();
+
+// Add student
+if (isset($_POST['saveLearner'])) {
+    $learnerObj->register($_POST['fullname'], $_POST['program']);
+}
+
+// Mark attendance
+if (isset($_POST['savePresence'])) {
+    $presenceObj->record($_POST['learner_id'], $_POST['state']);
+}
+
+$learners = $learnerObj->listAll();
+$records = $presenceObj->listRecords();
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Learners & Presence Management</title>
+</head>
+<body>
+    <h2>Register Learner</h2>
+    <form method="post">
+        <input type="text" name="fullname" placeholder="Full Name" required>
+        <input type="text" name="program" placeholder="Program" required>
+        <button type="submit" name="saveLearner">Register</button>
+    </form>
+
+    <h2>All Learners</h2>
+    <table border="1" cellpadding="5">
+        <tr><th>ID</th><th>Name</th><th>Program</th></tr>
+        <?php foreach ($learners as $l): ?>
+            <tr>
+                <td><?= $l['id'] ?></td>
+                <td><?= $l['name'] ?></td>
+                <td><?= $l['course'] ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+
+    <h2>Record Presence</h2>
+    <form method="post">
+        <input type="number" name="learner_id" placeholder="Learner ID" required>
+        <select name="state">
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+        </select>
+        <button type="submit" name="savePresence">Record</button>
+    </form>
+
+    <h2>Presence Records</h2>
+    <table border="1" cellpadding="5">
+        <tr><th>ID</th><th>Learner ID</th><th>Status</th></tr>
+        <?php foreach ($records as $r): ?>
+            <tr>
+                <td><?= $r['id'] ?></td>
+                <td><?= $r['student_id'] ?></td>
+                <td><?= $r['status'] ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+</body>
+</html>
