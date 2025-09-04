@@ -1,0 +1,52 @@
+<?php
+class Rectangle {
+    private $width;
+    private $height;
+
+    // Constructor with optional parameters
+    public function __construct($width = 1, $height = 1) {
+        $this->setWidth($width);
+        $this->setHeight($height);
+    }
+
+    // Setter for width
+    public function setWidth($width) {
+        $this->width = ($width > 0) ? $width : 1;
+    }
+
+    // Setter for height
+    public function setHeight($height) {
+        $this->height = ($height > 0) ? $height : 1;
+    }
+
+    // Getter for width
+    public function getWidth() {
+        return $this->width;
+    }
+
+    // Getter for height
+    public function getHeight() {
+        return $this->height;
+    }
+
+    // Method to calculate area
+    public function calculateArea() {
+        return $this->width * $this->height;
+    }
+
+    // Method to calculate perimeter
+    public function calculatePerimeter() {
+        return 2 * ($this->width + $this->height);
+    }
+}
+
+// Example usage
+$rect = new Rectangle();
+$rect->setWidth(7);
+$rect->setHeight(4);
+
+echo "Rectangle Width: " . $rect->getWidth() . "<br>";
+echo "Rectangle Height: " . $rect->getHeight() . "<br>";
+echo "Area: " . $rect->calculateArea() . "<br>";
+echo "Perimeter: " . $rect->calculatePerimeter();
+?>
